@@ -5,6 +5,7 @@ class Student extends Model {
         super.init({
             name: Sequelize.STRING,
             email: Sequelize.STRING,
+            new_email: Sequelize.VIRTUAL,
             age: Sequelize.INTEGER,
             weight: Sequelize.DOUBLE,
             height: Sequelize.DOUBLE,

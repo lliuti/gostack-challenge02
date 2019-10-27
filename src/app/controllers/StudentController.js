@@ -18,7 +18,29 @@ class StudentController {
     };
 
     async update(req, res) {
-        return res.status(200).json({ ok: true });
+        if (!req.body.email) {
+            return res.status(400).json({ error: "You must type student's email" });
+        }
+        const { email, name, new_email, age, weight, height } = req.body;
+        
+        const student = await Student.findOne({ where: { email: email } });
+
+        if (!student) {
+            return res.status(400).json({ error: 'Student not found' });
+        }
+        if (new_email) {
+            const checkNewEmail = await Student.findOne({ where: { email : new_email } });
+
+            if (checkNewEmail) {
+                return res.status(400).json({ error: 'This email already belongs to a student' });
+            }
+
+            req.body.email = new_email;
+        }
+    
+        const updatedStudent = await student.update(req.body);
+
+        return res.json(updatedStudent);
     };
 }
 
