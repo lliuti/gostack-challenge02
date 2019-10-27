@@ -1,7 +1,21 @@
+import * as Yup from 'yup';
+
 import Student from '../models/Student';
 
 class StudentController {
     async store(req, res) {
+        const schema = Yup.object().shape({
+            name: Yup.string().required(),
+            email: Yup.string().email().required(),
+            age: Yup.number().required(),
+            weight: Yup.boolean().required(),
+            height: Yup.boolean().required(),
+        });
+
+        if (!(await schema.isValid(req.body))) {
+            return res.status(400).json({ error: 'Invalid data' });
+        }
+
         const { email } = req.body;
 
         const checkStudent = await Student.findOne({ where: { email: email } });
@@ -18,9 +32,22 @@ class StudentController {
     };
 
     async update(req, res) {
-        if (!req.body.email) {
-            return res.status(400).json({ error: "You must type student's email" });
+
+        const schema = Yup.object().shape({
+            name: Yup.string(),
+            email: Yup.string().email().required(),
+            age: Yup.number(),
+            weight: Yup.boolean(),
+            height: Yup.boolean(),
+        });
+
+        if (!(await schema.isValid(req.body))) {
+            return res.status(400).json({ error: 'Invalid data' });
         }
+
+        // if (!req.body.email) {
+        //     return res.status(400).json({ error: "You must type student's email" });
+        // }
         const { email, name, new_email, age, weight, height } = req.body;
         
         const student = await Student.findOne({ where: { email: email } });
