@@ -3,72 +3,87 @@ import * as Yup from 'yup';
 import Student from '../models/Student';
 
 class StudentController {
-    async store(req, res) {
-        const schema = Yup.object().shape({
-            name: Yup.string().required(),
-            email: Yup.string().email().required(),
-            age: Yup.number().required(),
-            weight: Yup.boolean().required(),
-            height: Yup.boolean().required(),
-        });
+  async store(req, res) {
+    const schema = Yup.object().shape({
+      name: Yup.string().required(),
+      email: Yup.string()
+        .email()
+        .required(),
+      age: Yup.number().required(),
+      weight: Yup.number().required(),
+      height: Yup.number().required(),
+    });
 
-        if (!(await schema.isValid(req.body))) {
-            return res.status(400).json({ error: 'Invalid data' });
-        }
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Invalid data' });
+    }
 
-        const { email } = req.body;
+    const { email } = req.body;
 
-        const checkStudent = await Student.findOne({ where: { email: email } });
-       
-        if (checkStudent) {
-            return res.status(400).json({ error: 'This email already belongs to a student' });
-        }
+    const checkStudent = await Student.findOne({ where: { email } });
 
-        const student = await Student.create(req.body);
+    if (checkStudent) {
+      return res
+        .status(400)
+        .json({ error: 'This email already belongs to a student' });
+    }
 
-        const { name, age, height, weight } = student;
+    const student = await Student.create(req.body);
 
-        return res.json({ name, email, age, height, weight });
-    };
+    const { name, age, height, weight } = student;
 
-    async update(req, res) {
+    return res.json({
+      name,
+      email,
+      age,
+      height,
+      weight,
+    });
+  }
 
-        const schema = Yup.object().shape({
-            name: Yup.string(),
-            email: Yup.string().email().required(),
-            age: Yup.number(),
-            weight: Yup.boolean(),
-            height: Yup.boolean(),
-        });
+  async update(req, res) {
+    console.log(req.params.id);
+    const schema = Yup.object().shape({
+      name: Yup.string(),
+      email: Yup.string().email(),
+      age: Yup.number(),
+      weight: Yup.number(),
+      height: Yup.number(),
+    });
 
-        if (!(await schema.isValid(req.body))) {
-            return res.status(400).json({ error: 'Invalid data' });
-        }
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Invalid data' });
+    }
 
-        // if (!req.body.email) {
-        //     return res.status(400).json({ error: "You must type student's email" });
-        // }
-        const { email, name, new_email, age, weight, height } = req.body;
-        
-        const student = await Student.findOne({ where: { email: email } });
+    const { email, name, age, weight, height } = req.body;
 
-        if (!student) {
-            return res.status(400).json({ error: 'Student not found' });
-        }
-        if (new_email) {
-            const checkNewEmail = await Student.findOne({ where: { email : new_email } });
+    const student = await Student.findByPk(req.params.id);
 
-            if (checkNewEmail) {
-                return res.status(400).json({ error: 'This email already belongs to a student' });
-            }
+    if (!student) {
+      return res.status(400).json({ error: 'Student not found' });
+    }
+    if (email) {
+      const checkNewEmail = await Student.findOne({ where: { email } });
 
-            req.body.email = new_email;
-        }
-    
-        const updatedStudent = await student.update(req.body);
+      if (checkNewEmail) {
+        return res
+          .status(400)
+          .json({ error: 'This email already belongs to a student' });
+      }
+    }
 
-        return res.json(updatedStudent);
-    };
+    const updatedStudent = await student.update(req.body);
+
+    const { id } = updatedStudent;
+    return res.json({
+      id,
+      name,
+      email,
+      weight,
+      height,
+      age,
+    });
+  }
 }
 
 export default new StudentController();

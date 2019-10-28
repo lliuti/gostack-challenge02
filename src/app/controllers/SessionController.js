@@ -5,40 +5,44 @@ import User from '../models/User';
 import authConfig from '../../config/authConfig';
 
 class SessionController {
-    async store(req, res) {
-        const schema = Yup.object().shape({
-            email: Yup.string().email().required(),
-            password: Yup.string().min(6).required(),
-        });
+  async store(req, res) {
+    const schema = Yup.object().shape({
+      email: Yup.string()
+        .email()
+        .required(),
+      password: Yup.string()
+        .min(6)
+        .required(),
+    });
 
-        if (!(await schema.isValid(req.body))) {
-            return res.status(400).json({ error: 'Invalid data' });
-        }
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Invalid data' });
+    }
 
-        const { email, password } = req.body;
+    const { email, password } = req.body;
 
-        const user = await User.findOne({ where: { email : email }});
+    const user = await User.findOne({ where: { email } });
 
-        if (!user) {
-            return res.status(401).json({ error: 'User not found' });
-        }
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
 
-        if (!(await user.checkPassword(password))) {
-            return res.status(401).json({ error: 'Invalid password' });
-        }
+    if (!(await user.checkPassword(password))) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
 
-        const { id } = user;
+    const { id } = user;
 
-        return res.json({ 
-            user: {
-                id, 
-                email,
-            },
-            token: jwt.sign({ id }, authConfig.secret, { 
-                expiresIn: authConfig.expiresIn,
-            }), 
-        });
-    };
+    return res.json({
+      user: {
+        id,
+        email,
+      },
+      token: jwt.sign({ id }, authConfig.secret, {
+        expiresIn: authConfig.expiresIn,
+      }),
+    });
+  }
 }
 
 export default new SessionController();

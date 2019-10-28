@@ -4,21 +4,19 @@ import { promisify } from 'util';
 import authCfg from '../../config/authConfig';
 
 export default async (req, res, next) => {
-    const authHeader = req.headers.authorization;
+  const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
-        return res.status(401).json({ error: 'Token not provided' });
-    }
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Token not provided' });
+  }
 
-    const [, token] = authHeader.split(' ');
+  const [, token] = authHeader.split(' ');
 
-    try {
-        const decoded = await promisify(jwt.verify)(token, authCfg.secret);
-        req.studentId = decoded.id;
-        return next();  
-
-    } catch(ex) {
-        return res.status(401).json({ error: 'Invalid Token' });
-    }
-
-}
+  try {
+    const decoded = await promisify(jwt.verify)(token, authCfg.secret);
+    req.studentId = decoded.id;
+    return next();
+  } catch (ex) {
+    return res.status(401).json({ error: 'Invalid Token' });
+  }
+};
